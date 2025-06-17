@@ -53,3 +53,4 @@ Posibles Mejoras Futuras
 - Reportes por fecha.
 - Autenticación con contraseña.
 - Validaciones más robustas.
+
