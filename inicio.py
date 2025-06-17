@@ -2,203 +2,192 @@ from tkinter import *
 from tkinter import messagebox
 from datetime import datetime
 
-# -----------------------
-# VARIABLES GLOBALES
-# -----------------------
-productos = []
-historial_ventas = []
-nombre_usuario = ""
+class Producto:
+    def __init__(self, nombre, cantidad, precio, fecha_ingreso):
+        self.nombre = nombre
+        self.cantidad = cantidad
+        self.precio = precio
+        self.fecha_ingreso = fecha_ingreso
 
-# -----------------------
-# FUNCIONES PRINCIPALES
-# -----------------------
-def abrir_menu_principal():
-    global nombre_usuario
-    nombre_usuario = entrada_nombre.get()
-    if not nombre_usuario:
-        messagebox.showwarning("Campo vacío", "Por favor escribe el nombre o negocio")
-        return
-    ventana_inicio.destroy()
-    mostrar_menu_principal()
+    def __str__(self):
+        return f"{self.nombre} | Cant: {self.cantidad} | ${self.precio:.2f} | Ingresado: {self.fecha_ingreso}"
 
-def mostrar_menu_principal():
-    global ventana_menu
-    ventana_menu = Tk()
-    ventana_menu.title("MiniInventario")
-    ventana_menu.geometry("420x430")
 
-    Label(ventana_menu, text="MiniInventario", font=("Arial", 16, "bold")).pack(pady=10)
-    Label(ventana_menu, text=f"Bienvenido {nombre_usuario}", font=("Arial", 12)).pack(pady=10)
+class MiniInventarioApp:
+    def __init__(self):
+        self.productos = []
+        self.historial_ventas = []
+        self.nombre_usuario = ""
+        self.ventana_inicio = None
+        self.ventana_menu = None
 
-    Button(ventana_menu, text="➕ Ingresar Producto", width=30, command=mostrar_ingreso).pack(pady=6)
-    Button(ventana_menu, text="💰 Vender Producto", width=30, command=mostrar_venta).pack(pady=6)
-    Button(ventana_menu, text="❌ Eliminar Producto", width=30, command=mostrar_eliminacion).pack(pady=6)
-    Button(ventana_menu, text="📦 Ver Salidas de Inventario", width=30, command=mostrar_historial).pack(pady=6)
-    Button(ventana_menu, text="🔒 Cerrar sesión", width=30, bg="#f44336", fg="white", command=volver_al_inicio).pack(pady=15)
+        self.iniciar_app()
 
-def volver_al_inicio():
-    ventana_menu.destroy()
-    main()
+    def iniciar_app(self):
+        self.ventana_inicio = Tk()
+        self.ventana_inicio.title("MiniInventario")
+        self.ventana_inicio.geometry("380x250")
 
-# -----------------------
-# INGRESAR PRODUCTO
-# -----------------------
-def mostrar_ingreso():
-    ventana_menu.withdraw()
-    ingreso = Toplevel()
-    ingreso.title("Ingresar Producto")
-    ingreso.geometry("400x350")
+        Label(self.ventana_inicio, text="MiniInventario", font=("Arial", 16, "bold")).pack(pady=10)
+        Label(self.ventana_inicio, text="Escribe tu nombre o el de tu negocio:", font=("Arial", 11)).pack(pady=10)
 
-    Label(ingreso, text="Nombre del Producto:").pack()
-    entrada_nombre_p = Entry(ingreso, width=30)
-    entrada_nombre_p.pack()
+        self.entrada_nombre = Entry(self.ventana_inicio, width=30)
+        self.entrada_nombre.pack()
 
-    Label(ingreso, text="Cantidad:").pack()
-    entrada_cantidad = Entry(ingreso, width=30)
-    entrada_cantidad.pack()
+        Button(self.ventana_inicio, text="Iniciar", command=self.abrir_menu_principal).pack(pady=20)
 
-    Label(ingreso, text="Precio:").pack()
-    entrada_precio = Entry(ingreso, width=30)
-    entrada_precio.pack()
+        self.ventana_inicio.mainloop()
 
-    lista = Listbox(ingreso, width=50)
-    lista.pack(pady=10)
-
-    def guardar_producto():
-        nombre = entrada_nombre_p.get()
-        try:
-            cantidad = int(entrada_cantidad.get())
-            precio = float(entrada_precio.get())
-        except:
-            messagebox.showerror("Error", "Cantidad y precio deben ser números")
+    def abrir_menu_principal(self):
+        self.nombre_usuario = self.entrada_nombre.get()
+        if not self.nombre_usuario:
+            messagebox.showwarning("Campo vacío", "Por favor escribe el nombre o negocio")
             return
+        self.ventana_inicio.destroy()
+        self.mostrar_menu_principal()
 
-        if nombre:
-            fecha = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-            productos.append({"nombre": nombre, "cantidad": cantidad, "precio": precio, "fecha_ingreso": fecha})
-            actualizar_lista(lista)
-            entrada_nombre_p.delete(0, END)
-            entrada_cantidad.delete(0, END)
-            entrada_precio.delete(0, END)
-        else:
-            messagebox.showwarning("Campo vacío", "Escribe el nombre del producto")
+    def mostrar_menu_principal(self):
+        self.ventana_menu = Tk()
+        self.ventana_menu.title("MiniInventario")
+        self.ventana_menu.geometry("420x430")
 
-    Button(ingreso, text="Guardar Producto", command=guardar_producto).pack()
-    Button(ingreso, text="Volver", command=lambda: [ingreso.destroy(), ventana_menu.deiconify()]).pack(pady=5)
+        Label(self.ventana_menu, text="MiniInventario", font=("Arial", 16, "bold")).pack(pady=10)
+        Label(self.ventana_menu, text=f"Bienvenido {self.nombre_usuario}", font=("Arial", 12)).pack(pady=10)
 
-    actualizar_lista(lista)
+        Button(self.ventana_menu, text="➕ Ingresar Producto", width=30, command=self.mostrar_ingreso).pack(pady=6)
+        Button(self.ventana_menu, text="💰 Vender Producto", width=30, command=self.mostrar_venta).pack(pady=6)
+        Button(self.ventana_menu, text="❌ Eliminar Producto", width=30, command=self.mostrar_eliminacion).pack(pady=6)
+        Button(self.ventana_menu, text="📦 Ver Salidas de Inventario", width=30, command=self.mostrar_historial).pack(pady=6)
+        Button(self.ventana_menu, text="🔒 Cerrar sesión", width=30, bg="#f44336", fg="white", command=self.reiniciar).pack(pady=15)
 
-# -----------------------
-# VENDER PRODUCTO
-# -----------------------
-def mostrar_venta():
-    ventana_menu.withdraw()
-    venta = Toplevel()
-    venta.title("Vender Producto")
-    venta.geometry("400x350")
+    def reiniciar(self):
+        self.ventana_menu.destroy()
+        self.__init__()
 
-    Label(venta, text="Selecciona el producto a vender").pack()
+    def mostrar_ingreso(self):
+        self.ventana_menu.withdraw()
+        ingreso = Toplevel()
+        ingreso.title("Ingresar Producto")
+        ingreso.geometry("400x350")
 
-    lista = Listbox(venta, width=50)
-    lista.pack(pady=10)
+        Label(ingreso, text="Nombre del Producto:").pack()
+        entrada_nombre = Entry(ingreso, width=30)
+        entrada_nombre.pack()
 
-    def vender():
-        seleccion = lista.curselection()
-        if seleccion:
-            index = seleccion[0]
-            producto = productos[index]
-            if producto["cantidad"] > 0:
-                producto["cantidad"] -= 1
-                fecha_venta = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
-                historial_ventas.append(f"{producto['nombre']} vendido por ${producto['precio']:.2f} | Fecha: {fecha_venta}")
-                if producto["cantidad"] == 0:
-                    productos.pop(index)
-                actualizar_lista(lista)
+        Label(ingreso, text="Cantidad:").pack()
+        entrada_cantidad = Entry(ingreso, width=30)
+        entrada_cantidad.pack()
+
+        Label(ingreso, text="Precio:").pack()
+        entrada_precio = Entry(ingreso, width=30)
+        entrada_precio.pack()
+
+        lista = Listbox(ingreso, width=50)
+        lista.pack(pady=10)
+
+        def guardar_producto():
+            nombre = entrada_nombre.get()
+            try:
+                cantidad = int(entrada_cantidad.get())
+                precio = float(entrada_precio.get())
+            except:
+                messagebox.showerror("Error", "Cantidad y precio deben ser números")
+                return
+
+            if nombre:
+                fecha = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                nuevo = Producto(nombre, cantidad, precio, fecha)
+                self.productos.append(nuevo)
+                self.actualizar_lista(lista)
+                entrada_nombre.delete(0, END)
+                entrada_cantidad.delete(0, END)
+                entrada_precio.delete(0, END)
             else:
-                messagebox.showinfo("Sin stock", "Este producto no tiene unidades.")
-        else:
-            messagebox.showinfo("Selecciona algo", "Debes seleccionar un producto.")
+                messagebox.showwarning("Campo vacío", "Escribe el nombre del producto")
 
-    Button(venta, text="💸 Vender Uno", command=vender).pack()
-    Button(venta, text="Volver", command=lambda: [venta.destroy(), ventana_menu.deiconify()]).pack(pady=5)
+        Button(ingreso, text="Guardar Producto", command=guardar_producto).pack()
+        Button(ingreso, text="Volver", command=lambda: [ingreso.destroy(), self.ventana_menu.deiconify()]).pack(pady=5)
 
-    actualizar_lista(lista)
+        self.actualizar_lista(lista)
 
-# -----------------------
-# ELIMINAR PRODUCTO
-# -----------------------
-def mostrar_eliminacion():
-    ventana_menu.withdraw()
-    eliminar = Toplevel()
-    eliminar.title("Eliminar Producto")
-    eliminar.geometry("400x300")
+    def mostrar_venta(self):
+        self.ventana_menu.withdraw()
+        venta = Toplevel()
+        venta.title("Vender Producto")
+        venta.geometry("400x350")
 
-    Label(eliminar, text="Selecciona el producto a eliminar").pack()
+        Label(venta, text="Selecciona el producto a vender").pack()
 
-    lista = Listbox(eliminar, width=50)
-    lista.pack(pady=10)
+        lista = Listbox(venta, width=50)
+        lista.pack(pady=10)
 
-    def eliminar_producto():
-        seleccion = lista.curselection()
-        if seleccion:
-            index = seleccion[0]
-            productos.pop(index)
-            actualizar_lista(lista)
-        else:
-            messagebox.showinfo("Selecciona algo", "Debes seleccionar un producto.")
+        def vender():
+            seleccion = lista.curselection()
+            if seleccion:
+                index = seleccion[0]
+                producto = self.productos[index]
+                if producto.cantidad > 0:
+                    producto.cantidad -= 1
+                    fecha_venta = datetime.now().strftime("%d/%m/%Y %H:%M:%S")
+                    self.historial_ventas.append(f"{producto.nombre} vendido por ${producto.precio:.2f} | Fecha: {fecha_venta}")
+                    if producto.cantidad == 0:
+                        self.productos.pop(index)
+                    self.actualizar_lista(lista)
+                else:
+                    messagebox.showinfo("Sin stock", "Este producto no tiene unidades.")
+            else:
+                messagebox.showinfo("Selecciona algo", "Debes seleccionar un producto.")
 
-    Button(eliminar, text="🗑 Eliminar Producto", command=eliminar_producto).pack()
-    Button(eliminar, text="Volver", command=lambda: [eliminar.destroy(), ventana_menu.deiconify()]).pack(pady=5)
+        Button(venta, text="💸 Vender Uno", command=vender).pack()
+        Button(venta, text="Volver", command=lambda: [venta.destroy(), self.ventana_menu.deiconify()]).pack(pady=5)
 
-    actualizar_lista(lista)
+        self.actualizar_lista(lista)
 
-# -----------------------
-# VER HISTORIAL DE VENTAS
-# -----------------------
-def mostrar_historial():
-    ventana_menu.withdraw()
-    salida = Toplevel()
-    salida.title("Salidas de Inventario")
-    salida.geometry("400x300")
+    def mostrar_eliminacion(self):
+        self.ventana_menu.withdraw()
+        eliminar = Toplevel()
+        eliminar.title("Eliminar Producto")
+        eliminar.geometry("400x300")
 
-    Label(salida, text="🧾 Historial de Ventas").pack()
-    lista = Listbox(salida, width=50)
-    lista.pack(pady=10)
+        Label(eliminar, text="Selecciona el producto a eliminar").pack()
 
-    for venta in historial_ventas:
-        lista.insert(END, venta)
+        lista = Listbox(eliminar, width=50)
+        lista.pack(pady=10)
 
-    Button(salida, text="Volver", command=lambda: [salida.destroy(), ventana_menu.deiconify()]).pack(pady=5)
+        def eliminar_producto():
+            seleccion = lista.curselection()
+            if seleccion:
+                index = seleccion[0]
+                self.productos.pop(index)
+                self.actualizar_lista(lista)
+            else:
+                messagebox.showinfo("Selecciona algo", "Debes seleccionar un producto.")
 
-# -----------------------
-# ACTUALIZAR LISTA
-# -----------------------
-def actualizar_lista(lista_widget):
-    lista_widget.delete(0, END)
-    for p in productos:
-        texto = f"{p['nombre']} | Cant: {p['cantidad']} | ${p['precio']:.2f} | Ingresado: {p['fecha_ingreso']}"
-        lista_widget.insert(END, texto)
+        Button(eliminar, text="🗑 Eliminar Producto", command=eliminar_producto).pack()
+        Button(eliminar, text="Volver", command=lambda: [eliminar.destroy(), self.ventana_menu.deiconify()]).pack(pady=5)
 
-# -----------------------
-# VENTANA DE INICIO
-# -----------------------
-def main():
-    global ventana_inicio, entrada_nombre
-    ventana_inicio = Tk()
-    ventana_inicio.title("MiniInventario")
-    ventana_inicio.geometry("380x250")
+        self.actualizar_lista(lista)
 
-    Label(ventana_inicio, text="MiniInventario", font=("Arial", 16, "bold")).pack(pady=10)
-    Label(ventana_inicio, text="Escribe tu nombre o el de tu negocio:", font=("Arial", 11)).pack(pady=10)
+    def mostrar_historial(self):
+        self.ventana_menu.withdraw()
+        salida = Toplevel()
+        salida.title("Salidas de Inventario")
+        salida.geometry("400x300")
 
-    entrada_nombre = Entry(ventana_inicio, width=30)
-    entrada_nombre.pack()
+        Label(salida, text="🧾 Historial de Ventas").pack()
+        lista = Listbox(salida, width=50)
+        lista.pack(pady=10)
 
-    Button(ventana_inicio, text="Iniciar", command=abrir_menu_principal).pack(pady=20)
+        for venta in self.historial_ventas:
+            lista.insert(END, venta)
 
-    ventana_inicio.mainloop()
+        Button(salida, text="Volver", command=lambda: [salida.destroy(), self.ventana_menu.deiconify()]).pack(pady=5)
 
-# -----------------------
-# INICIAR APP
-# -----------------------
-main()
+    def actualizar_lista(self, lista_widget):
+        lista_widget.delete(0, END)
+        for p in self.productos:
+            lista_widget.insert(END, str(p))
+
+
+# Iniciar la app
+MiniInventarioApp()
